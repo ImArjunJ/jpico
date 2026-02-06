@@ -210,6 +210,9 @@ class canvas {
   }
   void set_text_color(u16 color) { text_color_ = color; }
   void set_text_background(u16 color) { text_bg_color_ = color; }
+  void set_text_size(u8 s) { text_size_x_ = s; text_size_y_ = s; }
+  void set_text_size(u8 sx, u8 sy) { text_size_x_ = sx; text_size_y_ = sy; }
+  void set_text_wrap(bool wrap) { text_wrap_ = wrap; }
   void set_font(const font* f) { font_ = f; }
 
   void draw_char(i16 x, i16 y, char c, u16 fg, u16 bg, u8 sx = 1, u8 sy = 1) {

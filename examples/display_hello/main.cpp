@@ -37,8 +37,8 @@ int main() {
   canvas.create_framebuffer();
   canvas.set_clear_color(colors::black.raw);
   canvas.clear();
-
   canvas.set_text_color(colors::cyan.raw);
+  canvas.set_text_size(3);
   canvas.print("hello, jpico!\n");
   canvas.set_text_color(colors::green.raw);
   canvas.printf("display: %dx%d\n", display.width(), display.height());
