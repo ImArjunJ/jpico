@@ -1,0 +1,88 @@
+#include <algorithm>
+#include <jpico/drivers/xpt2046.hpp>
+#include <jpico/log.hpp>
+
+#include "pico/stdlib.h"
+
+namespace jpico::drivers {
+
+result<void> xpt2046::init() {
+  cs_.high();
+
+  read_channel(xpt2046_cmd::READ_X);
+  read_channel(xpt2046_cmd::READ_Y);
+
+  log::info("xpt2046 initialized (screen %dx%d)", screen_w_, screen_h_);
+  return ok();
+}
+
+u16 xpt2046::read_channel(u8 cmd) {
+  u8 tx[3] = {cmd, 0x00, 0x00};
+  u8 rx[3] = {};
+
+  u32 orig_baud = spi_.config().baudrate;
+  spi_.set_baudrate(SPI_FREQ);
+  spi_.set_format(8, SPI_CPOL_0, SPI_CPHA_0);
+
+  cs_.low();
+  spi_write_read_blocking(spi_.instance(), tx, rx, 3);
+  cs_.high();
+
+  spi_.set_baudrate(orig_baud);
+  spi_.set_format(8, spi_.config().cpol, spi_.config().cpha);
+
+  return static_cast<u16>(((rx[1] << 8) | rx[2]) >> 3) & 0x0FFF;
+}
+
+bool xpt2046::touched() const {
+  if (irq_) {
+    return !irq_->read();
+  }
+  return const_cast<xpt2046*>(this)->pressure() > PRESSURE_THRESHOLD;
+}
+
+u16 xpt2046::pressure() { return read_channel(xpt2046_cmd::READ_Z1); }
+
+point xpt2046::read_raw() {
+  u16 x_samples[SAMPLES];
+  u16 y_samples[SAMPLES];
+
+  for (u8 i = 0; i < SAMPLES; ++i) {
+    x_samples[i] = read_channel(xpt2046_cmd::READ_X);
+    y_samples[i] = read_channel(xpt2046_cmd::READ_Y);
+  }
+
+  std::sort(x_samples, x_samples + SAMPLES);
+  std::sort(y_samples, y_samples + SAMPLES);
+
+  constexpr u8 skip = SAMPLES / 4;
+  u32 x_sum = 0, y_sum = 0;
+  constexpr u8 count = SAMPLES - 2 * skip;
+
+  for (u8 i = skip; i < SAMPLES - skip; ++i) {
+    x_sum += x_samples[i];
+    y_sum += y_samples[i];
+  }
+
+  return {static_cast<i16>(x_sum / count), static_cast<i16>(y_sum / count)};
+}
+
+point xpt2046::read() {
+  auto raw = read_raw();
+
+  i16 rx = cal_.swap_xy ? raw.y : raw.x;
+  i16 ry = cal_.swap_xy ? raw.x : raw.y;
+
+  i32 sx = static_cast<i32>(rx - cal_.sx_raw_min) * (screen_w_ - 1) /
+           (cal_.sx_raw_max - cal_.sx_raw_min);
+  i32 sy = static_cast<i32>(ry - cal_.sy_raw_min) * (screen_h_ - 1) /
+           (cal_.sy_raw_max - cal_.sy_raw_min);
+
+  if (cal_.invert_x) sx = (screen_w_ - 1) - sx;
+  if (cal_.invert_y) sy = (screen_h_ - 1) - sy;
+
+  return {std::clamp<i16>(static_cast<i16>(sx), 0, screen_w_ - 1),
+          std::clamp<i16>(static_cast<i16>(sy), 0, screen_h_ - 1)};
+}
+
+}  // namespace jpico::drivers

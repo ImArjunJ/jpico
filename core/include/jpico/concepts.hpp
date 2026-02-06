@@ -37,4 +37,11 @@ concept input_source = requires(T s) {
   { s.pressed() } -> std::convertible_to<bool>;
 };
 
+// any touch input that gives screen coordinates.
+template <typename T>
+concept touch_source = requires(T t) {
+  { t.touched() } -> std::convertible_to<bool>;
+  { t.read() } -> std::convertible_to<point>;
+};
+
 }  // namespace jpico

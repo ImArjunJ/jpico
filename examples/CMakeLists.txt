@@ -4,6 +4,10 @@ if(JPICO_ENABLE_ILI9341 AND JPICO_ENABLE_GRAPHICS)
     add_subdirectory(display_hello)
 endif()
 
+if(JPICO_ENABLE_ILI9341 AND JPICO_ENABLE_XPT2046 AND JPICO_ENABLE_GRAPHICS)
+    add_subdirectory(touch_paint)
+endif()
+
 if(JPICO_ENABLE_SSD1306 AND JPICO_ENABLE_GRAPHICS)
     add_subdirectory(oled_hello)
 endif()

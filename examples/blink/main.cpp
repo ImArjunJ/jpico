@@ -1,8 +1,6 @@
 #include <jpico/core.hpp>
 #include <jpico/hal/gpio.hpp>
 
-#include "pico/stdlib.h"
-
 int main() {
   stdio_init_all();
 

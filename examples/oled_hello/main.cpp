@@ -3,8 +3,6 @@
 #include <jpico/graphics/canvas.hpp>
 #include <jpico/hal/hal.hpp>
 
-#include "pico/stdlib.h"
-
 using namespace jpico;
 
 int main() {

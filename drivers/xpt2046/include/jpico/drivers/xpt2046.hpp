@@ -1,0 +1,81 @@
+#pragma once
+#include <jpico/core.hpp>
+#include <jpico/hal/gpio.hpp>
+#include <jpico/hal/spi_bus.hpp>
+
+namespace jpico::drivers {
+
+namespace xpt2046_cmd {
+inline constexpr u8 READ_X = 0xD0;   // channel 101
+inline constexpr u8 READ_Y = 0x90;   // channel 001
+inline constexpr u8 READ_Z1 = 0xB0;  // channel 011
+inline constexpr u8 READ_Z2 = 0xC0;  // channel 100
+}  // namespace xpt2046_cmd
+
+struct touch_calibration {
+  i16 sx_raw_min = 200;
+  i16 sx_raw_max = 3800;
+  i16 sy_raw_min = 370;
+  i16 sy_raw_max = 3800;
+  bool swap_xy = true;
+  bool invert_x = false;
+  bool invert_y = false;
+
+  constexpr touch_calibration() = default;
+  constexpr touch_calibration(i16 sx_min, i16 sx_max, i16 sy_min, i16 sy_max,
+                              bool swap = true, bool inv_x = false,
+                              bool inv_y = false)
+      : sx_raw_min{sx_min},
+        sx_raw_max{sx_max},
+        sy_raw_min{sy_min},
+        sy_raw_max{sy_max},
+        swap_xy{swap},
+        invert_x{inv_x},
+        invert_y{inv_y} {}
+};
+
+class xpt2046 {
+ public:
+  static constexpr u32 SPI_FREQ = 1'000'000;  // 1 MHz — datasheet max 2 MHz
+  static constexpr u8 SAMPLES = 16;           // oversample for noise rejection
+  static constexpr u16 PRESSURE_THRESHOLD = 100;
+
+  xpt2046(hal::spi_bus& spi, hal::output_pin& cs, hal::input_pin* irq = nullptr)
+      : spi_{spi}, cs_{cs}, irq_{irq} {}
+
+  ~xpt2046() = default;
+
+  xpt2046(const xpt2046&) = delete;
+  xpt2046& operator=(const xpt2046&) = delete;
+
+  result<void> init();
+
+  bool touched() const;
+  point read();
+
+  point read_raw();
+  u16 pressure();
+
+  void set_calibration(touch_calibration cal) { cal_ = cal; }
+  void set_screen_size(u16 w, u16 h) {
+    screen_w_ = w;
+    screen_h_ = h;
+  }
+
+  const touch_calibration& calibration() const { return cal_; }
+
+ private:
+  u16 read_channel(u8 cmd);
+
+  hal::spi_bus& spi_;
+  hal::output_pin& cs_;
+  hal::input_pin* irq_;
+
+  touch_calibration cal_;
+  u16 screen_w_ = 240;
+  u16 screen_h_ = 320;
+};
+
+static_assert(touch_source<xpt2046>);
+
+}  // namespace jpico::drivers
