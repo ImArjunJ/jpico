@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -26,36 +25,24 @@ project(jpico C CXX ASM)
 
 pico_sdk_init()
 
+option(JPICO_ENABLE_GRAPHICS  "Build the graphics module"     ON)
+option(JPICO_ENABLE_NETWORK   "Build the network module"      ON)
+option(JPICO_ENABLE_ILI9341   "Build the ILI9341 driver"      ON)
+option(JPICO_ENABLE_EXAMPLES  "Build example programs"         ON)
 
-set(PROJECT_SOURCES
-    src/main.cpp
-    src/drivers/ili9341.cpp
-    src/graphics/canvas.cpp
-    src/network/wifi.cpp
-)
+add_subdirectory(core)
+add_subdirectory(hal)
 
-add_executable(jpico ${PROJECT_SOURCES})
+if(JPICO_ENABLE_GRAPHICS)
+    add_subdirectory(graphics)
+endif()
 
-pico_set_program_name(jpico "jpico")
-pico_set_program_version(jpico "0.1")
+add_subdirectory(drivers)
 
-pico_enable_stdio_uart(jpico 0)
-pico_enable_stdio_usb(jpico 1)
+if(JPICO_ENABLE_NETWORK)
+    add_subdirectory(network)
+endif()
 
-target_include_directories(jpico PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/config
-)
-
-target_link_libraries(jpico
-    pico_stdlib
-    hardware_spi
-    pico_cyw43_arch_lwip_poll
-)
-
-target_compile_definitions(jpico PRIVATE
-    PICO_CYW43_ARCH_POLL=1
-)
-
-pico_add_extra_outputs(jpico)
+if(JPICO_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
