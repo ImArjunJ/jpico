@@ -30,6 +30,7 @@ endif()
 option(JPICO_ENABLE_GRAPHICS  "Build the graphics module"     ON)
 option(JPICO_ENABLE_NETWORK   "Build the network module"      ON)
 option(JPICO_ENABLE_ILI9341   "Build the ILI9341 driver"      ON)
+option(JPICO_ENABLE_SSD1306   "Build the SSD1306 driver"      ON)
 option(JPICO_ENABLE_EXAMPLES  "Build example programs"         OFF)
 
 add_subdirectory(core)
