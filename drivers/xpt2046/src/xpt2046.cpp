@@ -67,6 +67,54 @@ point xpt2046::read_raw() {
   return {static_cast<i16>(x_sum / count), static_cast<i16>(y_sum / count)};
 }
 
+void xpt2046::set_rotation(u8 rotation) {
+  rotation_ = rotation % 4;
+  apply_rotation();
+}
+
+void xpt2046::apply_rotation() {
+  switch (rotation_) {
+    case 0:  // portrait, origin top-left
+      cal_.swap_xy = false;
+      cal_.invert_x = true;
+      cal_.invert_y = false;
+      // no swap: raw_x -> screen_x, raw_y -> screen_y
+      cal_.sx_raw_min = bounds_.raw_x_min;
+      cal_.sx_raw_max = bounds_.raw_x_max;
+      cal_.sy_raw_min = bounds_.raw_y_min;
+      cal_.sy_raw_max = bounds_.raw_y_max;
+      break;
+    case 1:  // landscape, origin top-left
+      cal_.swap_xy = true;
+      cal_.invert_x = false;
+      cal_.invert_y = false;
+      // swap: raw_y -> screen_x, raw_x -> screen_y
+      cal_.sx_raw_min = bounds_.raw_y_min;
+      cal_.sx_raw_max = bounds_.raw_y_max;
+      cal_.sy_raw_min = bounds_.raw_x_min;
+      cal_.sy_raw_max = bounds_.raw_x_max;
+      break;
+    case 2:  // portrait, origin bottom-right
+      cal_.swap_xy = false;
+      cal_.invert_x = false;
+      cal_.invert_y = true;
+      cal_.sx_raw_min = bounds_.raw_x_min;
+      cal_.sx_raw_max = bounds_.raw_x_max;
+      cal_.sy_raw_min = bounds_.raw_y_min;
+      cal_.sy_raw_max = bounds_.raw_y_max;
+      break;
+    case 3:  // landscape, origin bottom-right
+      cal_.swap_xy = true;
+      cal_.invert_x = true;
+      cal_.invert_y = true;
+      cal_.sx_raw_min = bounds_.raw_y_min;
+      cal_.sx_raw_max = bounds_.raw_y_max;
+      cal_.sy_raw_min = bounds_.raw_x_min;
+      cal_.sy_raw_max = bounds_.raw_x_max;
+      break;
+  }
+}
+
 point xpt2046::read() {
   auto raw = read_raw();
 

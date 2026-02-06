@@ -12,6 +12,17 @@ inline constexpr u8 READ_Z1 = 0xB0;  // channel 011
 inline constexpr u8 READ_Z2 = 0xC0;  // channel 100
 }  // namespace xpt2046_cmd
 
+struct touch_bounds {
+  i16 raw_x_min = 370;
+  i16 raw_x_max = 3800;
+  i16 raw_y_min = 200;
+  i16 raw_y_max = 3800;
+
+  constexpr touch_bounds() = default;
+  constexpr touch_bounds(i16 xmin, i16 xmax, i16 ymin, i16 ymax)
+      : raw_x_min{xmin}, raw_x_max{xmax}, raw_y_min{ymin}, raw_y_max{ymax} {}
+};
+
 struct touch_calibration {
   i16 sx_raw_min = 200;
   i16 sx_raw_max = 3800;
@@ -20,23 +31,11 @@ struct touch_calibration {
   bool swap_xy = true;
   bool invert_x = false;
   bool invert_y = false;
-
-  constexpr touch_calibration() = default;
-  constexpr touch_calibration(i16 sx_min, i16 sx_max, i16 sy_min, i16 sy_max,
-                              bool swap = true, bool inv_x = false,
-                              bool inv_y = false)
-      : sx_raw_min{sx_min},
-        sx_raw_max{sx_max},
-        sy_raw_min{sy_min},
-        sy_raw_max{sy_max},
-        swap_xy{swap},
-        invert_x{inv_x},
-        invert_y{inv_y} {}
 };
 
 class xpt2046 {
  public:
-  static constexpr u32 SPI_FREQ = 1'000'000;  // 1 MHz — datasheet max 2 MHz
+  static constexpr u32 SPI_FREQ = 1'000'000;  // 1 MHz - datasheet max 2 MHz
   static constexpr u8 SAMPLES = 16;           // oversample for noise rejection
   static constexpr u16 PRESSURE_THRESHOLD = 100;
 
@@ -57,21 +56,31 @@ class xpt2046 {
   u16 pressure();
 
   void set_calibration(touch_calibration cal) { cal_ = cal; }
+  void set_bounds(touch_bounds bounds) {
+    bounds_ = bounds;
+    apply_rotation();
+  }
   void set_screen_size(u16 w, u16 h) {
     screen_w_ = w;
     screen_h_ = h;
   }
 
+  void set_rotation(u8 rotation);
+
   const touch_calibration& calibration() const { return cal_; }
+  const touch_bounds& bounds() const { return bounds_; }
 
  private:
   u16 read_channel(u8 cmd);
+  void apply_rotation();
 
   hal::spi_bus& spi_;
   hal::output_pin& cs_;
   hal::input_pin* irq_;
 
+  touch_bounds bounds_;
   touch_calibration cal_;
+  u8 rotation_ = 1;
   u16 screen_w_ = 240;
   u16 screen_h_ = 320;
 };

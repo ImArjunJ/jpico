@@ -11,6 +11,15 @@
 
 namespace jpico::graphics {
 
+struct image {
+  u16 w;
+  u16 h;
+  const u16* data;  // row-major rgb565 pixels, w * h entries
+
+  u16 color_key = 0;
+  bool use_color_key = false;
+};
+
 template <display D>
 class canvas {
  public:
@@ -204,6 +213,68 @@ class canvas {
     }
   }
 
+  void draw_image(i16 x, i16 y, u16 img_w, u16 img_h, const u16* data) {
+    i16 sx = 0, sy = 0;
+    i16 dx = x, dy = y;
+    i16 w = static_cast<i16>(img_w);
+    i16 h = static_cast<i16>(img_h);
+
+    if (dx < 0) {
+      sx = -dx;
+      w += dx;
+      dx = 0;
+    }
+    if (dy < 0) {
+      sy = -dy;
+      h += dy;
+      dy = 0;
+    }
+    if (dx + w > width()) w = width() - dx;
+    if (dy + h > height()) h = height() - dy;
+    if (w <= 0 || h <= 0) return;
+
+    if (framebuffer_) {
+      for (i16 row = 0; row < h; ++row) {
+        const u16* src = &data[(sy + row) * img_w + sx];
+        u16* dst = &framebuffer_[(dy + row) * width() + dx];
+        std::memcpy(dst, src, static_cast<usize>(w) * sizeof(u16));
+      }
+      framebuffer_dirty_ = true;
+    } else {
+      for (i16 row = 0; row < h; ++row) {
+        display_.blit(static_cast<u16>(dx), static_cast<u16>(dy + row),
+                      static_cast<u16>(w), 1, &data[(sy + row) * img_w + sx]);
+      }
+    }
+  }
+
+  void draw_image(i16 x, i16 y, const image& img) {
+    if (img.use_color_key) {
+      draw_image_keyed(x, y, img);
+    } else {
+      draw_image(x, y, img.w, img.h, img.data);
+    }
+  }
+
+  void draw_image_scaled(i16 x, i16 y, u16 dst_w, u16 dst_h, u16 img_w,
+                         u16 img_h, const u16* data) {
+    for (i16 dy = 0; dy < static_cast<i16>(dst_h); ++dy) {
+      i16 screen_y = y + dy;
+      if (screen_y < 0 || screen_y >= height()) continue;
+      u16 src_y = static_cast<u16>(static_cast<u32>(dy) * img_h / dst_h);
+      for (i16 dx = 0; dx < static_cast<i16>(dst_w); ++dx) {
+        i16 screen_x = x + dx;
+        if (screen_x < 0 || screen_x >= width()) continue;
+        u16 src_x = static_cast<u16>(static_cast<u32>(dx) * img_w / dst_w);
+        pixel(screen_x, screen_y, data[src_y * img_w + src_x]);
+      }
+    }
+  }
+
+  void draw_image_scaled(i16 x, i16 y, u16 dst_w, u16 dst_h, const image& img) {
+    draw_image_scaled(x, y, dst_w, dst_h, img.w, img.h, img.data);
+  }
+
   void set_cursor(i16 x, i16 y) {
     cursor_x_ = x;
     cursor_y_ = y;
@@ -364,6 +435,19 @@ class canvas {
                       sx, sy, fg);
         }
         bits <<= 1;
+      }
+    }
+  }
+
+  void draw_image_keyed(i16 x, i16 y, const image& img) {
+    for (i16 row = 0; row < static_cast<i16>(img.h); ++row) {
+      i16 screen_y = y + row;
+      if (screen_y < 0 || screen_y >= height()) continue;
+      for (i16 col = 0; col < static_cast<i16>(img.w); ++col) {
+        i16 screen_x = x + col;
+        if (screen_x < 0 || screen_x >= width()) continue;
+        u16 px = img.data[row * img.w + col];
+        if (px != img.color_key) pixel(screen_x, screen_y, px);
       }
     }
   }

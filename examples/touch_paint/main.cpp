@@ -35,7 +35,7 @@ int main() {
     while (true) sleep_ms(1000);
   }
 
-  display.set_rotation(1);
+  display.set_rotation(4);
 
   auto t = touch.init();
   if (!t) {
@@ -44,6 +44,7 @@ int main() {
   }
 
   touch.set_screen_size(display.width(), display.height());
+  touch.set_rotation(4);
 
   graphics::canvas canvas(display);
 
