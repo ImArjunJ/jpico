@@ -73,6 +73,15 @@ class spi_bus {
     return ok(static_cast<usize>(n));
   }
 
+  result<usize> transfer(std::span<const u8> tx, std::span<u8> rx,
+                         spi_cpol_t cpol, spi_cpha_t cpha) {
+    set_format(8, cpol, cpha);
+    auto len = std::min(tx.size(), rx.size());
+    auto n = spi_write_read_blocking(inst_, tx.data(), rx.data(),
+                                     static_cast<usize>(len));
+    return ok(static_cast<usize>(n));
+  }
+
   void set_format(u8 bits, spi_cpol_t cpol, spi_cpha_t cpha) {
     spi_set_format(inst_, bits, cpol, cpha, SPI_MSB_FIRST);
   }

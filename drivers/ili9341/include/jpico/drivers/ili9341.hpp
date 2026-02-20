@@ -51,15 +51,15 @@ class ili9341 {
   ili9341(const ili9341&) = delete;
   ili9341& operator=(const ili9341&) = delete;
 
-  result<void> init() ;
-  void set_rotation(u8 rotation) ;
+  result<void> init();
+  void set_rotation(u8 rotation);
 
   u16 width() const { return width_; }
   u16 height() const { return height_; }
 
-  void fill(u16 color) ;
-  void pixel(u16 x, u16 y, u16 color) ;
-  void blit(u16 x, u16 y, u16 w, u16 h, const u16* data) ;
+  void fill(u16 color);
+  void pixel(u16 x, u16 y, u16 color);
+  void blit(u16 x, u16 y, u16 w, u16 h, const u16* data);
 
  private:
   void hw_reset();

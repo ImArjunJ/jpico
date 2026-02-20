@@ -1,10 +1,20 @@
 #include <jpico/core.hpp>
-#include <jpico/hal/gpio.hpp>
+#include <jpico/hal/board_led.hpp>
+#include <jpico/hal/time.hpp>
+
+using namespace jpico;
+
 int main() {
-  stdio_init_all();
-  jpico::hal::output_pin led(28);
+  hal::init_stdio();
+  hal::board_led led;
+  auto r = led.init();
+  if (!r) {
+    log::error("led init failed: %s", r.error().message);
+    return 1;
+  }
+
   while (true) {
     led.toggle();
-    sleep_ms(500);
+    hal::sleep(500);
   }
 }

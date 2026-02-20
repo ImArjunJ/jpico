@@ -5,7 +5,6 @@ target_link_libraries(example_oled_hello
     jpico_hal
     jpico_ssd1306
     jpico_graphics
-    pico_stdlib
 )
 
 pico_enable_stdio_usb(example_oled_hello 1)

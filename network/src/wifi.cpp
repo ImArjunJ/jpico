@@ -117,6 +117,10 @@ void wifi_manager::blink_led(u32 on_ms, u32 off_ms, u32 count) {
   }
 }
 
+void wifi_manager::poll() {
+  if (initialized_) cyw43_arch_poll();
+}
+
 void wifi_manager::update_status(wifi_status new_status) {
   if (status_ != new_status) {
     status_ = new_status;

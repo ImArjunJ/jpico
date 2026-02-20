@@ -2,8 +2,8 @@ add_executable(example_wifi_connect main.cpp)
 
 target_link_libraries(example_wifi_connect
     jpico_core
+    jpico_hal
     jpico_network
-    pico_stdlib
 )
 
 pico_enable_stdio_usb(example_wifi_connect 1)

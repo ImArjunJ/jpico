@@ -1,8 +1,7 @@
 #include <algorithm>
 #include <jpico/drivers/xpt2046.hpp>
 #include <jpico/log.hpp>
-
-#include "pico/stdlib.h"
+#include <span>
 
 namespace jpico::drivers {
 
@@ -22,11 +21,12 @@ u16 xpt2046::read_channel(u8 cmd) {
 
   u32 orig_baud = spi_.config().baudrate;
   spi_.set_baudrate(SPI_FREQ);
-  spi_.set_format(8, SPI_CPOL_0, SPI_CPHA_0);
 
-  cs_.low();
-  spi_write_read_blocking(spi_.instance(), tx, rx, 3);
-  cs_.high();
+  {
+    hal::cs_guard guard(cs_);
+    spi_.transfer(std::span<const u8>(tx, 3), std::span<u8>(rx, 3), SPI_CPOL_0,
+                  SPI_CPHA_0);
+  }
 
   spi_.set_baudrate(orig_baud);
   spi_.set_format(8, spi_.config().cpol, spi_.config().cpha);

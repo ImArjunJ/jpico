@@ -2,8 +2,6 @@
 #include <jpico/drivers/ssd1306.hpp>
 #include <jpico/log.hpp>
 
-#include "pico/stdlib.h"
-
 namespace jpico::drivers {
 
 // i2c helpers — mirrors the rpi reference implementation:

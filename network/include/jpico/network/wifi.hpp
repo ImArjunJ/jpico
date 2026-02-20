@@ -54,6 +54,8 @@ class wifi_manager {
   void set_led(bool on);
   void blink_led(u32 on_ms, u32 off_ms, u32 count);
 
+  void poll();
+
   using status_callback = std::function<void(wifi_status)>;
   void set_status_callback(status_callback cb) { status_callback_ = cb; }
 

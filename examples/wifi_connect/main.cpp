@@ -1,13 +1,12 @@
 #include <jpico/core.hpp>
+#include <jpico/hal/time.hpp>
 #include <jpico/network/wifi.hpp>
-
-#include "pico/stdlib.h"
 
 using namespace jpico;
 
 int main() {
-  stdio_init_all();
-  sleep_ms(2000);
+  hal::init_stdio();
+  hal::sleep(2000);
 
   network::wifi_manager wifi;
 
@@ -25,10 +24,10 @@ int main() {
     }
   });
 
-  auto init = wifi.init(CYW43_COUNTRY_UK);
+  auto init = wifi.init();
   if (!init) {
     log::error("wifi init failed: %s", init.error().message);
-    while (true) sleep_ms(1000);
+    while (true) hal::sleep(1000);
   }
 
   log::info("connecting...");
@@ -42,7 +41,7 @@ int main() {
   }
 
   while (true) {
-    cyw43_arch_poll();
-    sleep_ms(10);
+    wifi.poll();
+    hal::sleep(10);
   }
 }

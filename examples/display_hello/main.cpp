@@ -6,8 +6,8 @@
 using namespace jpico;
 
 int main() {
-  stdio_init_all();
-  sleep_ms(2000);
+  hal::init_stdio();
+  hal::sleep(2000);
 
   hal::spi_bus spi(spi0, {
                              .baudrate = 40'000'000,
@@ -26,7 +26,7 @@ int main() {
   auto r = display.init();
   if (!r) {
     log::error("display init failed: %s", r.error().message);
-    while (true) sleep_ms(1000);
+    while (true) hal::sleep(1000);
   }
 
   display.set_rotation(1);
@@ -43,6 +43,6 @@ int main() {
   canvas.flush();
 
   while (true) {
-    sleep_ms(100);
+    hal::sleep(100);
   }
 }

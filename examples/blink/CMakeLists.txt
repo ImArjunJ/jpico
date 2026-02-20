@@ -3,7 +3,7 @@ add_executable(example_blink main.cpp)
 target_link_libraries(example_blink
     jpico_core
     jpico_hal
-    pico_stdlib
+    pico_cyw43_arch_none
 )
 
 pico_enable_stdio_usb(example_blink 1)

@@ -6,8 +6,8 @@
 using namespace jpico;
 
 int main() {
-  stdio_init_all();
-  sleep_ms(2000);
+  hal::init_stdio();
+  hal::sleep(2000);
 
   hal::i2c_bus i2c(i2c0, {
                              .baudrate = 400'000,
@@ -21,7 +21,7 @@ int main() {
   auto r = oled.init();
   if (!r) {
     log::error("oled init failed: %s", r.error().message);
-    while (true) sleep_ms(1000);
+    while (true) hal::sleep(1000);
   }
 
   graphics::canvas canvas(oled);
@@ -34,6 +34,6 @@ int main() {
   oled.flush();
 
   while (true) {
-    sleep_ms(100);
+    hal::sleep(100);
   }
 }

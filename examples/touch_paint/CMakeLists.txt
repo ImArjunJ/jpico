@@ -6,7 +6,6 @@ target_link_libraries(example_touch_paint
     jpico_ili9341
     jpico_xpt2046
     jpico_graphics
-    pico_stdlib
 )
 
 pico_enable_stdio_usb(example_touch_paint 1)

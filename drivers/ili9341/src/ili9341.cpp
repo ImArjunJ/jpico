@@ -1,7 +1,6 @@
 #include <jpico/drivers/ili9341.hpp>
+#include <jpico/hal/time.hpp>
 #include <jpico/log.hpp>
-
-#include "pico/stdlib.h"
 
 namespace jpico::drivers {
 
@@ -133,7 +132,7 @@ result<void> ili9341::init() {
     u8 num_args = x & 0x7F;
     send_command(cmd, addr, num_args);
     addr += num_args;
-    if (x & 0x80) sleep_ms(150);
+    if (x & 0x80) hal::sleep(150);
   }
 
   width_ = NATIVE_WIDTH;
@@ -145,9 +144,9 @@ result<void> ili9341::init() {
 
 void ili9341::hw_reset() {
   rst_.low();
-  sleep_ms(5);
+  hal::sleep(5);
   rst_.high();
-  sleep_ms(150);
+  hal::sleep(150);
 }
 
 void ili9341::set_rotation(u8 rotation) {
