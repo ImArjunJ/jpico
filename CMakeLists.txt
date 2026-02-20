@@ -19,6 +19,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   endif()
 
   set(PICO_BOARD pico2_w CACHE STRING "Board type")
+  set(PICO_PLATFORM rp2350-riscv CACHE STRING "Target platform")
+  set(PICO_COMPILER pico_riscv_gcc_zcb_zcmp CACHE STRING "Compiler variant")
 
   include(pico_sdk_import.cmake)
 

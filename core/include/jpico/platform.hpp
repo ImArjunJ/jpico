@@ -14,6 +14,17 @@ inline constexpr bool is_rp2040 = true;
 inline constexpr bool is_rp2040 = false;
 #endif
 
+#if defined(PICO_RISCV) && PICO_RISCV
+inline constexpr bool is_riscv = true;
+inline constexpr bool is_arm   = false;
+#elif defined(__riscv)
+inline constexpr bool is_riscv = true;
+inline constexpr bool is_arm   = false;
+#else
+inline constexpr bool is_riscv = false;
+inline constexpr bool is_arm   = true;
+#endif
+
 #if defined(CYW43_WL_GPIO_LED_PIN) || defined(PICO_CYW43_SUPPORTED)
 inline constexpr bool has_wifi = true;
 #else
